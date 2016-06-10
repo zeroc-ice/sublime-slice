@@ -1,0 +1,122 @@
+%YAML 1.2
+---
+# See http://www.sublimetext.com/docs/3/syntax.html
+name: Slice
+file_extensions: [ice]
+scope: source.slice
+
+contexts:
+  main:
+    - include: core
+
+  core:
+    - match: '\b(exception|local|struct)\b'
+      scope: storage.type.slice
+
+    - match: '\b(bool|int|string|long|Object|void)\b'
+      scope: storage.type.slice
+
+    # Numbers
+    - match: '\b(-)?[0-9.]+\b'
+      scope: constant.numeric.slice
+
+    - include: strings
+    - include: control
+    - include: preprocessor
+    - include: expression
+
+  expression:
+    - include: interface-definition
+
+  prototype:
+    - include: comments
+
+  curly-brackets:
+    - match: '{'
+      scope: meta.brace.curly.begin.slice
+      push:
+        - meta_scope: meta.group.braces.curly.slice
+        - match: '}'
+          scope: meta.brace.curly.end.slice
+          pop: true
+        - include: main
+
+  brackets:
+    - include: curly-brackets
+
+  control:
+    - match: '\b(module)\b'
+      scope: keyword.control.module.slice
+      # push:
+      #   - meta_scope: meta.module.slice
+        # - include: curly-brackets
+
+  preprocessor:
+    - match: ^\s*(#)\s*(pragma|define|include)\b
+      scope: keyword.other.preprocessor.directive.slice
+
+  comments:
+    - match: '//'
+      push:
+        - meta_scope: comment.line.slice
+        - match: $
+          pop: true
+
+    - match: '/\*\*(?!/)'
+      scope: punctuation.definition.comment.begin.slice
+      push:
+        - meta_scope: comment.block.documentation.slice
+        - match: '\*/'
+          scope: punctuation.definition.comment.end.slice
+          pop: true
+
+    - match: '/\*'
+      scope: punctuation.definition.comment.begin.slice
+      push:
+        - meta_scope: comment.block.documentation.slice
+        - match: '\*/'
+          scope: punctuation.definition.comment.end.slice
+          pop: true
+
+  strings:
+    # Strings begin and end with quotes, and use backslashes as an escape character
+    - match: '"'
+      scope: punctuation.definition.string.begin.slice
+      push:
+        - meta_scope: string.quoted.double.slice
+        - match: '\\.'
+          scope: constant.character.escape.slice
+        - match: '"'
+          scope: punctuation.definition.string.end.slice
+          pop: true
+
+  interface-definition:
+    - match: \b(interface|class)\b
+      scope: storage.type.class.slice
+      push:
+        - meta_scope: meta.interface.slice
+          push: [interface-name, interface-body]
+          #   captures:
+          #     1: storage.type.class.js
+          #     2: storage.type.interface.flowtype.js
+          #   scope: storage.type.class.js
+          #   push: [class_body, class_extends, class_name]
+        # - match: (?<=})
+        - match: (?<=.)
+          pop: true
+  # interface-name:
+  #   - match: ([a-zA-Z])
+  #     scope: entity.name.class.js
+  #     pop: true
+  #       - include: flowtype-polymorph
+  #       - match: (?=\s*(?>extends|>|{))
+  #         pop: true
+
+  interface_body:
+      - match: '{'
+        scope: punctuation.definition.class.body.begin.slice
+        push:
+          - match: '}'
+            scope: punctuation.definition.class.body.end.slice
+            pop: true
+          - include: brackets

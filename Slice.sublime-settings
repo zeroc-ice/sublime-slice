@@ -1,0 +1,7 @@
+// Open .slice files on Slice syntax
+{
+    "extensions":
+    [
+        "ice"
+    ]
+}
