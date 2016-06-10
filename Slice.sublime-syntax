@@ -20,6 +20,7 @@ contexts:
     - match: '\b(-)?[0-9.]+\b'
       scope: constant.numeric.slice
 
+    - include: metadata
     - include: strings
     - include: control
     - include: preprocessor
@@ -54,6 +55,25 @@ contexts:
   preprocessor:
     - match: ^\s*(#)\s*(pragma|define|include)\b
       scope: keyword.other.preprocessor.directive.slice
+      push:
+        - match: '\s*<(.*)>'
+          captures:
+            1: string.quoted.other.include.slice
+          pop: true
+        - match: '\b(.*)$\b'
+          scope: meta.preprocessor.slice
+          pop: true
+
+  metadata:
+    - match: '\[(\[)?'
+      scope: meta.metadata.begin.slice
+      push:
+        - meta_scope: meta.metadata.slice
+        - include: strings
+        - match: '\](\])?'
+          scope: meta.metadata.end.slice
+          pop: true
+
 
   comments:
     - match: '//'
