@@ -4,11 +4,14 @@ This package provides syntax highlighting for [Ice](https://github.com/zeroc-ice
 
 ## Installation
 
+Change your working directory to Sublime's Packages directory:
+* Windows: `%APPDATA%\Sublime\ Text\ 3/Packages`
+* OS X: `~/Library/Application\ Support/Sublime\ Text\ 3/Packages`
+* Linux: `~/.config/sublime-text-3/Packages`
+
+If this directory does not exist then create it. Now clone this repo:
+
 ```
-cd {package_directory}/Packages
-git clone https://github.com/zeroc-ice/sublime-slice
+git clone https://github.com/zeroc-ice/sublime-slice Slice
 ```
-Where `{package_directory}` is either:
-* Windows: %APPDATA%\Sublime Text 3/Package
-* OS X: ~/Library/Application Support/Sublime Text 3/Package
-* Linux: ~/.config/sublime-text-3
+
