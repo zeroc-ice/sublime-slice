@@ -10,17 +10,13 @@ contexts:
     - include: core
 
   core:
-    - match: '\b(exception|local|struct)\b'
+    - match: '\b(exception|local|struct|enum)\b'
       scope: storage.type.slice
-
-    - match: '\b(bool|int|string|long|Object|void)\b'
+    - match: '\b(bool|int|string|long|Object|void|dictionary)\b'
       scope: storage.type.slice
-
-    # Numbers
-    - match: '\b(-)?[0-9.]+\b'
-      scope: constant.numeric.slice
 
     - include: metadata
+    - include: numbers
     - include: strings
     - include: control
     - include: preprocessor
@@ -28,6 +24,7 @@ contexts:
 
   expression:
     - include: interface-definition
+    - include: function-definition
 
   prototype:
     - include: comments
@@ -48,9 +45,10 @@ contexts:
   control:
     - match: '\b(module)\b'
       scope: keyword.control.module.slice
-      # push:
-      #   - meta_scope: meta.module.slice
-        # - include: curly-brackets
+      push:
+        - meta_scope: meta.module.slice
+        - include: brackets
+        - include: main
 
   preprocessor:
     - match: ^\s*(#)\s*(pragma|define|include)\b
@@ -73,7 +71,6 @@ contexts:
         - match: '\](\])?'
           scope: meta.metadata.end.slice
           pop: true
-
 
   comments:
     - match: '//'
@@ -98,6 +95,10 @@ contexts:
           scope: punctuation.definition.comment.end.slice
           pop: true
 
+  numbers:
+    - match: '\b(-)?[0-9.]+\b'
+      scope: constant.numeric.slice
+
   strings:
     # Strings begin and end with quotes, and use backslashes as an escape character
     - match: '"'
@@ -111,32 +112,14 @@ contexts:
           pop: true
 
   interface-definition:
+    - meta_scope: meta.class.slice
     - match: \b(interface|class)\b
+      captures:
+        1: storage.type.interface.slice
+        2: storage.type.class.slice
       scope: storage.type.class.slice
-      push:
-        - meta_scope: meta.interface.slice
-          push: [interface-name, interface-body]
-          #   captures:
-          #     1: storage.type.class.js
-          #     2: storage.type.interface.flowtype.js
-          #   scope: storage.type.class.js
-          #   push: [class_body, class_extends, class_name]
-        # - match: (?<=})
-        - match: (?<=.)
-          pop: true
-  # interface-name:
-  #   - match: ([a-zA-Z])
-  #     scope: entity.name.class.js
-  #     pop: true
-  #       - include: flowtype-polymorph
-  #       - match: (?=\s*(?>extends|>|{))
-  #         pop: true
 
-  interface_body:
-      - match: '{'
-        scope: punctuation.definition.class.body.begin.slice
-        push:
-          - match: '}'
-            scope: punctuation.definition.class.body.end.slice
-            pop: true
-          - include: brackets
+  function-definition:
+    - match: '^\s*\w+\s*(\w+)\('
+      captures:
+        1: entity.name.function.slice
