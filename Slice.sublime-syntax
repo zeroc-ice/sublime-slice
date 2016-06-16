@@ -10,11 +10,7 @@ contexts:
     - include: core
 
   core:
-    - match: '\b(exception|local|struct|enum)\b'
-      scope: storage.type.slice
-    - match: '\b(bool|int|string|long|Object|void|dictionary)\b'
-      scope: storage.type.slice
-
+    - include: storage
     - include: metadata
     - include: numbers
     - include: strings
@@ -22,9 +18,17 @@ contexts:
     - include: preprocessor
     - include: expression
 
+  storage:
+    - match: '\b(exception|local|struct|enum|throws)\b'
+      scope: storage.type.slice
+    - match: '\b(bool|int|string|long|Object|void|dictionary|sequence|optional|idempotent)\b'
+      scope: storage.type.slice
+    - match: '\b(-)?[0-9.]+\b'
+      scope: constant.numeric.slice
+
   expression:
     - include: interface-definition
-    - include: function-definition
+    # - include: function-definition
 
   prototype:
     - include: comments
@@ -37,9 +41,20 @@ contexts:
         - match: '}'
           scope: meta.brace.curly.end.slice
           pop: true
-        - include: main
+        - include: core
+
+  round-brackets:
+    - match: '\('
+      scope: meta.brace.round.begin.slice
+      push:
+        - meta_scope: meta.group.braces.round.slice
+        - match: '\)'
+          scope: meta.brace.round.end.slice
+          pop: true
+        - include: core
 
   brackets:
+    - include: round-brackets
     - include: curly-brackets
 
   control:
@@ -48,7 +63,7 @@ contexts:
       push:
         - meta_scope: meta.module.slice
         - include: brackets
-        - include: main
+        - include: core
 
   preprocessor:
     - match: ^\s*(#)\s*(pragma|define|include)\b
@@ -95,10 +110,6 @@ contexts:
           scope: punctuation.definition.comment.end.slice
           pop: true
 
-  numbers:
-    - match: '\b(-)?[0-9.]+\b'
-      scope: constant.numeric.slice
-
   strings:
     # Strings begin and end with quotes, and use backslashes as an escape character
     - match: '"'
@@ -112,14 +123,41 @@ contexts:
           pop: true
 
   interface-definition:
-    - meta_scope: meta.class.slice
     - match: \b(interface|class)\b
       captures:
         1: storage.type.interface.slice
         2: storage.type.class.slice
       scope: storage.type.class.slice
+      set: [interface-body, interface-name]
+
+
+  interface-name:
+    - match: \w+
+      scope: entity.name.class.slice
+      set:
+        - match: (?=\s*\{)
+          pop: true
+
+  interface-body:
+    - meta_scope: meta.class.slice
+    - match : '{'
+      scope: punctuation.definition.interface.body.begin.slice
+      push:
+        - match: '}'
+          scope: punctuation.definition.interface.end.begin.slice
+          pop: true
+        - include: storage
+        - include: strings
+        - include: function-definition
+        - include: brackets
+    - match: (?<=})
+      pop: true
 
   function-definition:
-    - match: '^\s*\w+\s*(\w+)\('
+    - match: '(\w+)\s*\('
       captures:
         1: entity.name.function.slice
+      push:
+        - match: '\);'
+          pop: true
+        - include: core
