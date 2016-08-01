@@ -21,7 +21,7 @@ contexts:
   storage:
     - match: '\b(exception|local|struct|enum|throws)\b'
       scope: storage.type.slice
-    - match: '\b(bool|int|string|long|Object|void|dictionary|sequence|optional|idempotent)\b'
+    - match: '\b(bool|extends|LocalObject|string|byte|false|long|float|module|throws|const|idempotent|Object|true|dictionary|implements|optional|void|double|int|out|sequence|exception|local|short)\b'
       scope: storage.type.slice
     - match: '\b(-)?[0-9.]+\b'
       scope: constant.numeric.slice
@@ -130,17 +130,16 @@ contexts:
       scope: storage.type.class.slice
       set: [interface-body, interface-name]
 
-
   interface-name:
     - match: \w+
       scope: entity.name.class.slice
       set:
-        - match: (?=\s*\{)
+        - match: (?=\s*[{;])
           pop: true
 
   interface-body:
     - meta_scope: meta.class.slice
-    - match : '{'
+    - match: '{'
       scope: punctuation.definition.interface.body.begin.slice
       push:
         - match: '}'
@@ -150,7 +149,7 @@ contexts:
         - include: strings
         - include: function-definition
         - include: brackets
-    - match: (?<=})
+    - match: (?<=[};])
       pop: true
 
   function-definition:
@@ -158,6 +157,6 @@ contexts:
       captures:
         1: entity.name.function.slice
       push:
-        - match: '\);'
+        - match: '\)'
           pop: true
         - include: core
