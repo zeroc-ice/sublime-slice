@@ -134,6 +134,14 @@ contexts:
     - match: \w+
       scope: entity.name.class.slice
       set:
+        - include: interface-extends
+        - match: (?=\s*[{;])
+          pop: true
+
+  interface-extends:
+    - match: \bextends\b
+      scope: storage.type.slice
+      set:
         - match: (?=\s*[{;])
           pop: true
 
